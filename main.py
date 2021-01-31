@@ -71,37 +71,12 @@ ax1.plot(dfRes['Value'], color='green')
 
 ######## Supports & Resistances ########
 
-######### VERION 1
-# pivots, dates = indicators.supports_resistances(dfRes)
-# print(len(pivots))
-# timeD = dt.timedelta(days=300)
-# for index, i in enumerate(pivots):
-#     plt.plot_date([dates[index], dates[index]+timeD],
-#                   [pivots[index], pivots[index]],
-#                   linestyle="-", linewidth=2, color='red')
-
-######### VERSION 2
-# s =  np.mean(df['High'] - df['Low'])
-#
-# levels = []
-# for i in range(2, df.shape[0]-2):
-#   if indicators.isSupport(df,i):
-#     l = df['Low'][i]
-#     if indicators.isFarFromLevel(l, levels, np, s):
-#       levels.append((i, l))
-#   elif indicators.isResistance(df, i):
-#     l = df['High'][i]
-#     if indicators.isFarFromLevel(l, levels, np, s):
-#       levels.append((i, l))
-#
-# for level in levels:
-#     plt.hlines(level[1], xmin=df.index[level[0]], xmax=max(df.index), colors='red')
-
-######### VERSION 3
-test = indicators.resistances(df)
-
-# sup, res = indicators.supres(df, 10, np)
-# pprint(sup)
+resistances = indicators.resistances(df, ranges=365)
+timeD = dt.timedelta(days=300)
+for price, dates in resistances.items():
+    plt.plot_date([df.index[0], df.index[-1]],
+                  [price, price],
+                  linestyle="-", linewidth=8, color='red', alpha=0.2)
 
 ######## Tableau RSI ########
 
@@ -111,6 +86,6 @@ test = indicators.resistances(df)
 # plt.xlabel('Date')
 
 # ax1.legend()
-# plt.show()
+plt.show()
 
 
