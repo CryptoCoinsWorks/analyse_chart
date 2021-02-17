@@ -1,91 +1,126 @@
-import re
-import json
-import requests
-import yfinance
-import datetime as dt
-import indicators
-from utils import utils
-import numpy as np
+import yfinance as yf
 from pprint import pprint
-import pandas as pd
-import pandas_datareader.data as web
-import matplotlib.pyplot as plt
-import matplotlib.dates as date
-from argparse import ArgumentParser
-from tradingview_ta import TA_Handler, Interval, Exchange, technicals
+
+from PySide2 import QtWidgets
+import pyqtgraph as pg
+
+from ui import graphic_view
+from utils import utils
 
 
-# Step 1 : Choose Stock and Dates
-START_DATE = '1975-01-01'
-TODAY = dt.datetime.now().strftime("%Y-%m-%d")
+class MainWindow(graphic_view.Ui_MainWindow, QtWidgets.QMainWindow):
+    def __init__(self, title, values, *args, **kwargs):
+        super(MainWindow, self).__init__()
+        self.setupUi(self)
 
-# Stock information
-stock = {'symbol': "KO",
-         'title': 'COCA-COLA',
-         'screener': "america",
-         'exchange': "NASDAQ",
-         }
+        self.values = values
 
-# Step 2 : Get Datas
-class DataBase:
-    def __init__(self, ticker, startdate, today):
-        # Donnée du Stock
-        self.stock = ticker
-        self.stock_data = yfinance.download(self.stock['symbol'], startdate, today)
-        self.df = pd.DataFrame(self.stock_data)
-        pd.set_option('display.max_columns', None)
+        self.setWindowTitle(title)
 
-    def quote(self):
-        return self.df
+        self.graph_widget = pg.GraphicsLayoutWidget()
+        self.gridLayout_2.addWidget(self.graph_widget)
+
+        self.quotation_graph = None
+        self.rsi_graph = None
+
+        # graph_item = pg.GraphItem()
+        # pprint(graph_item)
+
+    def draw_quotation(self):
+        self.quotation_graph = self.graph_widget.addPlot(row=0, col=0)
+        self.quotation_graph.plot(self.values, pen=pg.mkPen('w', width=3))
+
+    def draw_rsi(self, length=14):
+        rsi = utils.get_rsi(values=self.values, length=length)
+        self.rsi_graph = self.graph_widget.addPlot(row=1, col=0)
+        self.rsi_graph.showGrid(x=True, y=True, alpha=1)
+        self.rsi_graph.setMaximumHeight(150)
+
+        self.rsi_graph.plot(rsi, connect="finite")
+        self.rsi_graph.plot(
+            utils.savgol_filter(rsi, 51), pen=pg.mkPen("b", width=1)
+        )
+
+        # Draw overbought and oversold
+        self.rsi_graph.addLine(y=70, pen=pg.mkPen("r", width=2))
+        self.rsi_graph.addLine(y=30, pen=pg.mkPen("r", width=2))
+
+    def draw_mva(self, lengths=None):
+        if not lengths or not self.quotation_graph:
+            return
+
+        for length in lengths:
+            mva = utils.rolling_mean(values=self.values, length=length)
+            self.quotation_graph.plot(
+                mva,
+                connect="finite",
+                pen=pg.mkPen("b", width=1),
+            )
+
+    def draw_resistances(self, closest=None):
+        if not self.quotation_graph:
+            return
+
+        resistances = utils.get_resistances(
+            values=self.values, closest=closest
+        )
+
+        for res in resistances:
+            self.quotation_graph.addLine(y=res, pen=pg.mkPen("r", width=1))
+
+    def draw_supports(self, closest=None):
+        if not self.quotation_graph:
+            return
+
+        supports = utils.get_supports(values=self.values, closest=closest)
+        for sup in supports:
+            self.quotation_graph.addLine(y=sup, pen=pg.mkPen("g", width=1))
+
+    def draw_zig_zag(self, value=None):
+        if not self.quotation_graph:
+            return
+
+        zigzag = utils.zig_zag(values=value)
+        self.quotation_graph.plot(zigzag, value[zigzag], pen=pg.mkPen("g", width=1.2))
+
+    def draw_bollinger_bands(self, values):
+        r = 102
+        g = 169
+        b = 218
+        middler, upper, lower = utils.bollinger_bands(values)
+        self.quotation_graph.plot(middler,  pen=pg.mkPen(color=(r, g, b), width=1.2))
+        up = self.quotation_graph.plot(upper, pen=pg.mkPen(color=(r, g, b), width=1.2))
+        low = self.quotation_graph.plot(lower, pen=pg.mkPen(color=(r, g, b), width=1.2))
+        pfill = pg.FillBetweenItem(up, low)
+        # self.quotation_graph.plot(pfill)
 
 
-db = DataBase(stock, START_DATE, TODAY)
-df = db.quote()
-dfRes = utils.createZigZagPoints(df['Close']).dropna()
-# pprint(df.keys())
+if __name__ == "__main__":
 
-higher_price = df['Close'].idxmax()
-# dates = pd.to_datetime(df.index)
+    app = QtWidgets.QApplication([])
 
-# Indicateurs
-longSMA = df['Close'].rolling(window=200).mean()
-longEMA = df['Close'].ewm(span=200).mean()
-rsi = indicators.RSI(df['Close'])
+    ticker = yf.Ticker("BN.PA")
+    data = ticker.history(period="1y", interval="1d", start="2019-01-01")
+    #
+    title = ticker.info.get("shortName")
+    values = utils.remove_nan(values=data["Close"].values)
+    #
+    # # Main Window
+    main = MainWindow(title=title, values=values)
+    # Draw the quotations
+    main.draw_quotation()
+    # Draw supports and resistances
+    # main.draw_supports(closest=0.8)
+    # main.draw_resistances(closest=0.8)
+    # Draw MVA (rolling mean)
+    # main.draw_mva(lengths=[3, 5, 8, 10, 12, 15])
+    # main.draw_mva(lengths=[20])
+    # Draw ZigZag
+    main.draw_zig_zag(value=values)
+    # Draw RSI (Relative Strength Index)
+    # main.draw_rsi()
+    main.draw_bollinger_bands(data)
+    # Show window
+    main.show()
 
-# Step 3 : Visualisation un tableau avec Matplotlib
-plt.rcParams.update({'font.size':10})
-fig, ax1 = plt.subplots(figsize=(15, 8))
-
-# Settings, Labels, Titles
-ax1.set_xlabel('Date')
-ax1.set_ylabel('Price')
-ax1.set_title(stock['title'])
-ax1.grid()
-
-# Import plot DATAs
-ax1.plot(df['Close'], color='red')
-ax1.plot(dfRes['Value'], color='green')
-# ax1.plot(longSMA, color='red', label='MA200')
-# ax1.plot(longEMA, color='green', label='EMA200')
-
-
-######## Supports & Resistances ########
-
-resistances = indicators.resistances(df, ranges=365)
-timeD = dt.timedelta(days=300)
-for price, dates in resistances.items():
-    plt.plot_date([df.index[0], df.index[-1]],
-                  [price, price],
-                  linestyle="-", linewidth=8, color='red', alpha=0.2)
-
-######## Tableau RSI ########
-
-# plt.axes([0.04, 0.2, .9, 0.75])
-# plt.axes([0.04, 0.05, .9, 0.1])
-# plt.plot(df['Close'])
-# plt.xlabel('Date')
-
-# ax1.legend()
-plt.show()
-
-
+    app.exec_()
