@@ -1,0 +1,12 @@
+QMainWindow{
+    background-color: rgb(14, 17, 25);
+}
+
+QTableView {
+    background-color: #131722;
+    color: white;
+}
+
+QTableView QTableCornerButton::section {
+    background: black;
+}
