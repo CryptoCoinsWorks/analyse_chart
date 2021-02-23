@@ -50,7 +50,7 @@ class Analyse_Web:
         # Marge Nette
         self.scrap_data(self.data_site, indicator[17].text, values[102:108])
         # Dividende / Action
-        self.scrap_data(self.data_site, indicator[19].text[:-1], values[114:120])
+        self.scrap_data(self.data_site, "Dividende", values[114:120])
         # Dette Nette
         self.scrap_data(self.data_site, "Dette Nette", values[126:132])
         # Leverage (Dette/EBITDA)

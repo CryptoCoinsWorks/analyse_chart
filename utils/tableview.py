@@ -5,20 +5,22 @@ from pprint import pprint
 class TableView(QtWidgets.QTableWidget):
     def __init__(self, parent, data):
         super(TableView, self).__init__(parent=parent)
-        self.data = data["data"]
-        self.analyse = data["analyse"]
-        # pprint(data)
+        self.data = data
+        # self.analyse = data["analyse"]
+        pprint(data)
 
         self.set_style()
 
-        list_remove = ["Nombre d'employés", "prix"]
-        for element in list_remove:
-            if element in self.data: del self.data[element]
+        # list_remove = ["Nombre d'employés", "prix"]
+        # for element in list_remove:
+        #     if element in self.data: del self.data[element]
 
         # Columns
-        header = self.data['Année']
+        header = self.data['YEAR']
         header.insert(0, 'Valorisation')
         header.insert(len(header), 'Bilan')
+        del self.data["YEAR"]
+
         self.setColumnCount(len(header))
         self.setHorizontalHeaderLabels(header)
         self.horizontalHeader().resizeSection(0, 150)
@@ -30,14 +32,13 @@ class TableView(QtWidgets.QTableWidget):
             cell_val.setData(QtCore.Qt.DisplayRole, title)
             self.setItem(row, 0, cell_val)
             for column, i in enumerate(donnee):
+                print(row, i, column)
                 cell = QtWidgets.QTableWidgetItem()
                 cell.setData(QtCore.Qt.DisplayRole, i)
                 self.setItem(row, column+1, cell)
 
-            if title not in self.analyse.keys():
-                continue
             analyse_cell = QtWidgets.QTableWidgetItem()
-            analyse_cell.setData(QtCore.Qt.DisplayRole, self.analyse[title])
+            analyse_cell.setData(QtCore.Qt.DisplayRole, self.data[title])
             self.setItem(row, 7, analyse_cell)
 
 
