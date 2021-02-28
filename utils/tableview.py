@@ -6,14 +6,8 @@ class TableView(QtWidgets.QTableWidget):
     def __init__(self, parent, data):
         super(TableView, self).__init__(parent=parent)
         self.data = data
-        # self.analyse = data["analyse"]
-        pprint(data)
 
         self.set_style()
-
-        # list_remove = ["Nombre d'employés", "prix"]
-        # for element in list_remove:
-        #     if element in self.data: del self.data[element]
 
         # Columns
         header = self.data['YEAR']
@@ -24,17 +18,19 @@ class TableView(QtWidgets.QTableWidget):
         self.setColumnCount(len(header))
         self.setHorizontalHeaderLabels(header)
         self.horizontalHeader().resizeSection(0, 150)
+        self.setColumnWidth(len(header)-1, 250)
+        self.setWordWrap(True)
 
         # Rows
-        for row, (title, donnee) in enumerate(sorted(self.data.items())[1:]):
+        for row, (title, donnee) in enumerate(sorted(self.data.items())):
             self.insertRow(row)
             cell_val = QtWidgets.QTableWidgetItem()
             cell_val.setData(QtCore.Qt.DisplayRole, title)
             self.setItem(row, 0, cell_val)
-            for column, i in enumerate(donnee):
-                print(row, i, column)
+            for column, data in enumerate(donnee):
                 cell = QtWidgets.QTableWidgetItem()
-                cell.setData(QtCore.Qt.DisplayRole, i)
+                cell.setData(QtCore.Qt.DisplayRole, str(data))
+                cell.setTextAlignment(QtCore.Qt.AlignRight)
                 self.setItem(row, column+1, cell)
 
             analyse_cell = QtWidgets.QTableWidgetItem()

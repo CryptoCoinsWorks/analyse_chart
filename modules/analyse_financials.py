@@ -14,11 +14,12 @@
 #  - Variation de la marge brute (1 point si elle est plus élevée dans l'année en cours par rapport à la précédente, 0 dans le cas contraire);
 #  - Évolution du ratio de rotation des actifs (1 point s'il est plus élevé dans l'année en cours par rapport à la précédente, 0 dans le cas contraire);
 
-from pprint import pprint
-import numpy as np
 import datetime
+import numpy as np
+from pprint import pprint
+from utils import utils as utl
 from yahoo_fin import stock_info as sf
-
+from .analyse import AnalyseData
 
 class AnalyseFondamental:
     def __init__(self, ticker):
@@ -28,17 +29,30 @@ class AnalyseFondamental:
         self.balance_datas = sf.get_balance_sheet(ticker)
         self.cash_flow_datas = sf.get_cash_flow(ticker)
         self.statistic_datas = sf.get_stats(ticker)
+        self.dividendes = sf.get_dividends(ticker)
 
         self.year_atual = self.resultat_datas.keys()[0]
         self.year_before = self.resultat_datas.keys()[1]
 
+        # pprint(self.resultat_datas)
+        # pprint(self.balance_datas)
+        # pprint(self.cash_flow_datas)
+        # pprint(self.per_datas)
+        # pprint(self.statistic_datas)
+
+        self.datas = {}
+        self.data_analyse = {}
+
         self.get_histoty_prices(ticker)
         self.set_var()
         self.datas_dict()
+        self.data_for_analyse()
 
+        self.analyse = AnalyseData(self.data_analyse)
+        self.extend_dict_data()
 
     def set_var(self):
-        self.actions = self.statistic_datas['Value'][9]
+        self.actions = int(np.ceil(float(self.statistic_datas['Value'][9].replace('M', ''))) * 1000000)
 
         self.price = self.per_datas['Quote Price']
         self.per = self.per_datas['PE Ratio (TTM)']
@@ -55,6 +69,7 @@ class AnalyseFondamental:
         self.actifs_total = self.balance_datas.loc['totalAssets']
         self.actifs_total_short_therm = self.balance_datas.loc['totalCurrentAssets']
         self.passif_total_short_therm = self.balance_datas.loc['totalCurrentLiabilities']
+        self.total_capitaux_propre = self.balance_datas.loc['totalStockholderEquity']
 
         self.free_cash_flow = self.cash_flow_datas.loc['totalCashFromOperatingActivities']
 
@@ -140,19 +155,42 @@ class AnalyseFondamental:
 
 
     def datas_dict(self):
-        self.datas = {}
         self.datas['YEAR'] = [date.strftime("%Y") for date in self.resultat_datas.keys().tolist()]
-        self.datas['Capitalisation'] = [self.capitalisation]
-        self.datas['EBITDA'] = self.ebitda.values.tolist()
-        self.datas['Bénéfice Net'] = self.benefice_net.values.tolist()
-        self.datas['Revenus Total'] = self.revenue_total.values.tolist()
-        self.datas["Actifs Total"] = self.actifs_total.values.tolist()
-        self.datas["Chiffre d'affaire"] = self.chiffre_affaire.values.tolist()
-        self.datas["Cash Flow"] = self.cash_flow.values.tolist()
-        self.datas["Dette"] = self.debt.values.tolist()
+        self.datas['EBITDA'] = utl.format_data(self.ebitda.values.tolist())
+        self.datas['Bénéfice Net'] = utl.format_data(self.benefice_net.values.tolist())
+        self.datas['Revenus Total'] = utl.format_data(self.revenue_total.values.tolist())
+        self.datas["Actifs Total"] = utl.format_data(self.actifs_total.values.tolist())
+        self.datas["Chiffre d'affaires"] = utl.format_data(self.chiffre_affaire.values.tolist())
+        self.datas["Trésorie"] = utl.format_data(self.cash_flow.values.tolist())
+        self.datas["Capitaux Propre"] = utl.format_data(self.total_capitaux_propre.values.tolist())
         self.datas['Score'] = [self.total_score()]
+
         self.bna_years()
         self.per_years()
+        self.debt_ratio()
+        self.bvps_ratio()
+        self.capitalisation_ratio()
+        self.dividendes_ratio()
+        self.roe_roa_ratio(roa=False)
+        self.roe_roa_ratio(roa=True)
+
+
+    def data_for_analyse(self):
+        self.data_analyse['Actifs Total'] = self.datas['Actifs Total']
+        self.data_analyse['BNA'] = self.datas['BNA']
+        self.data_analyse['BVPS'] = self.datas['BVPS']
+        self.data_analyse['Bénéfice Net'] = self.benefice_net.values.tolist()
+        self.data_analyse['Capitaux Propre'] = self.total_capitaux_propre.values.tolist()
+        self.data_analyse["Chiffre d'affaires"] = self.chiffre_affaire.tolist()
+        self.data_analyse['Dividendes'] = self.datas['Dividendes']
+        self.data_analyse['EBITDA'] = self.ebitda.values.tolist()
+        self.data_analyse['PER'] = self.datas['PER']
+        self.data_analyse['ROA'] = self.datas['ROA']
+        self.data_analyse['ROE'] = self.datas['ROE']
+        self.data_analyse['Revenus Total'] = self.revenue_total.values.tolist()
+        self.data_analyse['Trésorie'] = self.cash_flow.values.tolist()
+        self.data_analyse['YEAR'] = self.datas['YEAR']
+        self.data_analyse['PRICE'] = self.price_dates
 
 
     def get_histoty_prices(self, tick):
@@ -167,10 +205,11 @@ class AnalyseFondamental:
                 date_ = (date + datetime.timedelta(days=3)).strftime("%Y-%m-%d")
                 self.price_dates.append(self.history[date_])
 
+
     def bna_years(self):
-        actions = int(self.actions.replace('M', '00000').replace('.', ''))
-        bna = [round(float(resultat / int(actions)), 2) for resultat in self.benefice_net.values.tolist()]
+        bna = [round(float(resultat / int(self.actions)), 2) for resultat in self.benefice_net.values.tolist()]
         self.datas['BNA'] = bna
+
 
     def per_years(self):
         bna = self.datas['BNA']
@@ -178,6 +217,84 @@ class AnalyseFondamental:
         per[0] = self.per
         self.datas["PER"] = per
 
+
+    def debt_ratio(self):
+        dettes = utl.remove_nan(self.debt.values.tolist())
+        ebitda = utl.remove_nan(self.ebitda.values.tolist())
+        dette_calcul = [round(i/j) for i, j in zip(dettes, ebitda)]
+        self.datas["Dette"] = ["{}%".format(i) for i in dette_calcul]
+        self.data_analyse['Dette'] = dette_calcul
+
+
+    def bvps_ratio(self):
+        # BVPS : capitaux propres / nbr actions
+        capitaux = utl.remove_nan(self.total_capitaux_propre)
+        self.datas['BVPS'] = [round((i/self.actions), 2) for i in capitaux]
+
+
+    def capitalisation_ratio(self):
+        # Capitalistion annee prece : prix * nbr actions
+        capitalisation = [i*self.actions for i in self.price_dates]
+        self.datas['Capitalisation'] = utl.format_data(capitalisation)
+        self.data_analyse['Capitalisation'] = capitalisation
+
+
+    def dividendes_ratio(self):
+        # Dividende % : Dividende net par action / Cours de bourse
+        dividendes = [list(set(self.dividendes.loc[year]['dividend'].tolist())) for year in self.datas['YEAR']]
+        rendement = []
+        for i, price in zip(dividendes, self.price_dates):
+            if len(i) > 1:
+                i = sum(i)
+            else:
+                i = float(i[0])
+            price = round(float(price), 2)
+            calcul_rend = (i/price)*100
+            calcul_rend = round(calcul_rend, 2)
+            rendement.append("{}€".format(calcul_rend))
+
+        self.datas['Dividendes'] = dividendes
+        self.datas['Dividendes Rendement'] = ["{}%".format(i) for i in rendement]
+
+
+    def roe_roa_ratio(self, roa=False):
+        # Le ROE mesure la rentabilité des capitaux propres que les actionnaires d’une entreprise
+        # mettent à sa disposition. Il permet de calculer la rentabilité financière des fonds propres.
+        # roe = Bénéfices / Capitaux Propre => %
+        #
+        # Le ROA permet de mesurer la capacité et l’efficacité d’une entreprise
+        # à générer des profits avec ses actifs.
+        # roa = Bénéfices / Actifs  => %
+        #
+        #
+        capitaux = [int(i.replace(',','')) for i in self.datas["Capitaux Propre"]]
+        benefce = [int(i.replace(',','')) for i in self.datas['Bénéfice Net']]
+        actifs = [int(i.replace(',', '')) for i in self.datas["Actifs Total"]]
+
+        data = capitaux
+        if roa:
+            data = actifs
+
+        result = []
+        for i, j in zip(benefce, data):
+            try:
+                calcul = round((i/j)*100, 2)
+            except:
+                calcul = 0
+            result.append("{}%".format(calcul))
+
+        if roa:
+            self.datas['ROA'] = result
+        else:
+            self.datas['ROE'] = result
+
+
+    def extend_dict_data(self):
+        for title, data in self.analyse.analyse.items():
+            self.datas[title].append(data)
+
 if __name__ == '__main__':
     test = AnalyseFondamental("BN.PA")
-    # print(test.datas)
+    pprint(test.datas)
+    # pprint(test.data_analyse)
+

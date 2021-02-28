@@ -23,20 +23,6 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.horizontalLayout = QHBoxLayout()
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.lineEdit = QLineEdit(self.centralwidget)
-        self.lineEdit.setObjectName(u"lineEdit")
-
-        self.horizontalLayout.addWidget(self.lineEdit)
-
-        self.horizontalSpacer = QSpacerItem(450, 5, QSizePolicy.Maximum, QSizePolicy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-
-        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
-
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setStyleSheet(u"")
@@ -57,6 +43,21 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.tab_2, "")
 
         self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
+
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.lineEdit = QLineEdit(self.centralwidget)
+        self.lineEdit.setObjectName(u"lineEdit")
+        self.lineEdit.setReadOnly(True)
+
+        self.horizontalLayout.addWidget(self.lineEdit)
+
+        self.horizontalSpacer = QSpacerItem(450, 5, QSizePolicy.Maximum, QSizePolicy.Minimum)
+
+        self.horizontalLayout.addItem(self.horizontalSpacer)
+
+
+        self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)

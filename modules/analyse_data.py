@@ -108,7 +108,7 @@ class AnalyseData:
         else:
             analyse = "Chiffre d'affaire en décroissance sur les 3 dernieres années."
         # chiffreA.append(analyse)
-        self.analyse['Chiffre Affaire'] = analyse
+        self.analyse["Chiffre d'affaires"] = analyse
 
 
     def bna(self):

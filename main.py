@@ -2,35 +2,34 @@
 # https://algotrading101.com/learn/yahoo-finance-api-guide/
 
 import os
-import yfinance as yf
 from pprint import pprint
 
-from PySide2 import QtWidgets
 import pyqtgraph as pg
-import pandas as pd
 import talib
+from PySide2 import QtWidgets
 from yahoo_fin import stock_info as sf
 
-from ui import graphic_view
-from utils.utils import BarGraph
+from utils import utils
+from utils import tableview
 from utils import indicators
 from utils import candlestick
-from utils import tableview
-from utils import utils
-from modules import launch
+from utils.utils import BarGraph
+
+import view
+
 from modules.analyse_financials import AnalyseFondamental
 
 
 PATH = os.path.join(os.path.dirname(__file__), 'datas')
 
-class MainWindow(graphic_view.Ui_MainWindow, QtWidgets.QMainWindow):
-    def __init__(self, title, values, dates, ticker, *args, **kwargs):
-        super(MainWindow, self).__init__()
-        self.setupUi(self)
+class MainWindow(view.Window, QtWidgets.QMainWindow):
+    def __init__(self, title, values, dates, ticker, all_tickers):
+        super(MainWindow, self).__init__(all_tickers=all_tickers)
 
         self.values = values
         offset = 50
         self.range_view = ((len(self.values) - 365) + offset, len(self.values) + offset)
+
         self.date = []
         for i, x in enumerate(dates):
             self.date.append(x.strftime("%d/%m/%Y"))
@@ -47,8 +46,6 @@ class MainWindow(graphic_view.Ui_MainWindow, QtWidgets.QMainWindow):
         self.rsi_graph = None
 
         data = AnalyseFondamental(ticker)
-        # print(data.datas)
-        # print(data.total_score())
         tablemodel = tableview.TableView(self, data.datas)
         self.verticalLayout.addWidget(tablemodel)
 
@@ -194,14 +191,19 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication([])
 
     tick = "BN.PA"
-    all_tickers = sf.tickers_other("CAC40")
+
+    # All Markets Places
+
+    dow = sf.tickers_dow()
+    cac = sf.tickers_cac()
+    sp500 = sf.tickers_sp500()
+    nasdaq = sf.tickers_nasdaq()
+
+    all_tickers = {}
+    for i in [cac, dow, nasdaq]:
+        all_tickers.update(i)
 
     data = sf.get_data(tick, start_date="2019-01-01", interval="1d")
-
-    # pprint(per)
-    # pprint(income_statement)
-    # pprint(balance)
-    # pprint(cash_flow)
 
     title = sf.get_earnings_history(tick)[0]["companyshortname"]
     values = data['close'].values
@@ -211,29 +213,31 @@ if __name__ == "__main__":
     main = MainWindow(title=title,
                       values=values,
                       dates=dates,
-                      ticker=tick)
+                      ticker=tick,
+                      all_tickers=all_tickers)
+
     # Draw the quotations
     main.draw_quotation()
     # Draw Candlestick
-    # main.candlestick(data)
-    main.draw_main_price()
-    # # # Draw supports and resistances
-    # main.draw_supports(closest=0.8)
-    # main.draw_resistances(closest=0.8)
-    # # # Draw Bollinger Bands
-    # main.draw_bollinger_bands(data)
-    # # # Draw Volume
-    # main.draw_volume(values=data)
-    # # # Draw MVA (rolling mean)
-    # # # main.draw_mva(lengths=[3, 5, 8, 10, 12, 15])
-    # main.draw_mva(data=data, lengths=[20])
-    # # Draw ZigZag
-    # main.draw_zig_zag(value=values)
-    # # Draw RSI (Relative Strength Index)
-    # main.draw_rsi()
-    # # Draw MACD
-    # main.draw_macd(data)
-
-    # Show window
+    # # main.candlestick(data)
+    # main.draw_main_price()
+    # # # # Draw supports and resistances
+    # # main.draw_supports(closest=0.8)
+    # # main.draw_resistances(closest=0.8)
+    # # # # Draw Bollinger Bands
+    # # main.draw_bollinger_bands(data)
+    # # # # Draw Volume
+    # # main.draw_volume(values=data)
+    # # # # Draw MVA (rolling mean)
+    # # # # main.draw_mva(lengths=[3, 5, 8, 10, 12, 15])
+    # # main.draw_mva(data=data, lengths=[20])
+    # # # Draw ZigZag
+    # # main.draw_zig_zag(value=values)
+    # # # Draw RSI (Relative Strength Index)
+    # # main.draw_rsi()
+    # # # Draw MACD
+    # # main.draw_macd(data)
+    #
+    # # Show window
     main.show()
     app.exec_()
