@@ -4,37 +4,36 @@
 import os
 from pprint import pprint
 
-import pyqtgraph as pg
 import talib
+import pyqtgraph as pg
 from PySide2 import QtWidgets
 from yahoo_fin import stock_info as sf
+
+import view
 
 from utils import utils
 from utils import tableview
 from utils import indicators
 from utils import candlestick
 from utils.utils import BarGraph
-
-import view
-
+from ui.qtmodern import windows as ws
+from ui.qtmodern import styles as stl
 from modules.analyse_financials import AnalyseFondamental
 
 
 PATH = os.path.join(os.path.dirname(__file__), 'datas')
 
-class MainWindow(view.Window, QtWidgets.QMainWindow):
-    def __init__(self, title, values, dates, ticker, all_tickers):
-        super(MainWindow, self).__init__(all_tickers=all_tickers)
+class GraphWindow(view.Window, QtWidgets.QMainWindow):
+    def __init__(self, ticker, all_tickers):
+        super(GraphWindow, self).__init__(ticker=ticker, all_tickers=all_tickers)
 
-        self.values = values
+        self.load_data(ticker)
+
         offset = 50
-        self.range_view = ((len(self.values) - 365) + offset, len(self.values) + offset)
+        self.range_view = ((len(self.close_prices) - 365) + offset, len(self.close_prices) + offset)
 
-        self.date = []
-        for i, x in enumerate(dates):
-            self.date.append(x.strftime("%d/%m/%Y"))
+        self.setWindowTitle(self.title)
 
-        self.setWindowTitle(title)
         color_backdround = (19, 23, 34)
         color = (14, 17, 25)
         pg.setConfigOption('background', color_backdround)
@@ -45,11 +44,44 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
         self.quotation_graph = None
         self.rsi_graph = None
 
+        self.draw_quotation()
         data = AnalyseFondamental(ticker)
         tablemodel = tableview.TableView(self, data.datas)
         self.verticalLayout.addWidget(tablemodel)
 
         self.set_style_sheet()
+
+    def load_data(self, ticker):
+        self.data = sf.get_data(ticker, start_date="2019-01-01", interval="1d")
+        self.title = sf.get_earnings_history(ticker)[0]["companyshortname"]
+        self.close_prices = self.data['close'].values
+
+        self.date = []
+        for x in self.data.index:
+            self.date.append(x.strftime("%d/%m/%Y"))
+
+    def set_charts(self):
+        # Draw the quotations
+        self.draw_quotation()
+        # Draw Candlestick
+        self.candlestick(self.data)
+        self.draw_main_price()
+        # # Draw supports and resistances
+        self.draw_supports(closest=0.8)
+        self.draw_resistances(closest=0.8)
+        # # Draw Bollinger Bands
+        self.draw_bollinger_bands(self.data)
+        # # Draw Volume
+        # main.draw_volume(values=data)
+        # # Draw MVA (rolling mean)
+        self.draw_mva(data=self.data, lengths=[3, 5, 8, 10, 12, 15])
+        self.draw_mva(data=self.data, lengths=[20])
+        # Draw ZigZag
+        self.draw_zig_zag(value=self.close_prices)
+        # Draw RSI (Relative Strength Index)
+        # main.draw_rsi()
+        # # Draw MACD
+        # main.draw_macd(data)
 
     def set_style_sheet(self):
         style = utils.load_stylesheet(os.path.dirname(__file__))
@@ -69,7 +101,7 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
         return date
 
     def draw_main_price(self):
-        self.quotation_graph.plot(self.values, pen=pg.mkPen('w', width=3))
+        self.quotation_graph.plot(self.close_prices, pen=pg.mkPen('w', width=3))
 
     def candlestick(self, data):
         """
@@ -108,7 +140,7 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
             return
 
         resistances = indicators.get_resistances(
-            values=self.values, closest=closest
+            values=self.close_prices, closest=closest
         )
 
         for res in resistances:
@@ -118,14 +150,13 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
         if not self.quotation_graph:
             return
 
-        supports = indicators.get_supports(values=self.values, closest=closest)
+        supports = indicators.get_supports(values=self.close_prices, closest=closest)
         for sup in supports:
             self.quotation_graph.addLine(y=sup, pen=pg.mkPen("g", width=1))
 
     def draw_zig_zag(self, value=None):
         if not self.quotation_graph:
             return
-
         zigzag = indicators.zig_zag(values=value)
         self.quotation_graph.plot(zigzag, value[zigzag], pen=pg.mkPen("g", width=1.2))
 
@@ -151,7 +182,7 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
         # pg.GraphicsScene.mouseEvents.HoverEvent()
 
     def draw_rsi(self, length=14):
-        rsi = indicators.get_rsi(values=self.values, length=length)
+        rsi = indicators.get_rsi(values=self.close_prices, length=length)
         self.rsi_graph = self.graph_widget.addPlot(row=2, col=0)
         self.rsi_graph.showGrid(x=True, y=True, alpha=1)
         self.rsi_graph.setMaximumHeight(150)
@@ -187,57 +218,32 @@ class MainWindow(view.Window, QtWidgets.QMainWindow):
         self.macd_graph.showGrid(x=True, y=True, alpha=1)
 
 
+class TradingChart:
+    def __init__(self, tick):
+        super(TradingChart, self).__init__()
+        app = QtWidgets.QApplication([])
+
+        # All Markets Places
+        dow = sf.tickers_dow()
+        cac = sf.tickers_cac()
+        sp500 = sf.tickers_sp500()
+        nasdaq = sf.tickers_nasdaq()
+
+        all_tickers = {}
+        for i in [cac, dow, nasdaq, sp500]:
+            all_tickers.update(i)
+
+        # Main Window
+        main = GraphWindow(ticker=tick, all_tickers=all_tickers)
+
+        # Show window
+        stl.dark(app)
+        mw = ws.ModernWindow(main)
+        mw.show()
+        app.exec_()
+
+
+
 if __name__ == "__main__":
-    app = QtWidgets.QApplication([])
-
     tick = "BN.PA"
-
-    # All Markets Places
-
-    dow = sf.tickers_dow()
-    cac = sf.tickers_cac()
-    sp500 = sf.tickers_sp500()
-    nasdaq = sf.tickers_nasdaq()
-
-    all_tickers = {}
-    for i in [cac, dow, nasdaq]:
-        all_tickers.update(i)
-
-    data = sf.get_data(tick, start_date="2019-01-01", interval="1d")
-
-    title = sf.get_earnings_history(tick)[0]["companyshortname"]
-    values = data['close'].values
-    dates = data.index
-
-    # Main Window
-    main = MainWindow(title=title,
-                      values=values,
-                      dates=dates,
-                      ticker=tick,
-                      all_tickers=all_tickers)
-
-    # Draw the quotations
-    main.draw_quotation()
-    # Draw Candlestick
-    # # main.candlestick(data)
-    # main.draw_main_price()
-    # # # # Draw supports and resistances
-    # # main.draw_supports(closest=0.8)
-    # # main.draw_resistances(closest=0.8)
-    # # # # Draw Bollinger Bands
-    # # main.draw_bollinger_bands(data)
-    # # # # Draw Volume
-    # # main.draw_volume(values=data)
-    # # # # Draw MVA (rolling mean)
-    # # # # main.draw_mva(lengths=[3, 5, 8, 10, 12, 15])
-    # # main.draw_mva(data=data, lengths=[20])
-    # # # Draw ZigZag
-    # # main.draw_zig_zag(value=values)
-    # # # Draw RSI (Relative Strength Index)
-    # # main.draw_rsi()
-    # # # Draw MACD
-    # # main.draw_macd(data)
-    #
-    # # Show window
-    main.show()
-    app.exec_()
+    chart = TradingChart(tick)

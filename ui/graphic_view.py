@@ -23,27 +23,6 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.gridLayout = QGridLayout(self.centralwidget)
         self.gridLayout.setObjectName(u"gridLayout")
-        self.tabWidget = QTabWidget(self.centralwidget)
-        self.tabWidget.setObjectName(u"tabWidget")
-        self.tabWidget.setStyleSheet(u"")
-        self.tab = QWidget()
-        self.tab.setObjectName(u"tab")
-        self.gridLayout_3 = QGridLayout(self.tab)
-        self.gridLayout_3.setObjectName(u"gridLayout_3")
-        self.gridLayout_2 = QGridLayout()
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-
-        self.gridLayout_3.addLayout(self.gridLayout_2, 0, 0, 1, 1)
-
-        self.tabWidget.addTab(self.tab, "")
-        self.tab_2 = QWidget()
-        self.tab_2.setObjectName(u"tab_2")
-        self.verticalLayout = QVBoxLayout(self.tab_2)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.tabWidget.addTab(self.tab_2, "")
-
-        self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
-
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.lineEdit = QLineEdit(self.centralwidget)
@@ -58,6 +37,73 @@ class Ui_MainWindow(object):
 
 
         self.gridLayout.addLayout(self.horizontalLayout, 0, 0, 1, 1)
+
+        self.tabWidget = QTabWidget(self.centralwidget)
+        self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setStyleSheet(u"")
+        self.tab = QWidget()
+        self.tab.setObjectName(u"tab")
+        self.horizontalLayout_2 = QHBoxLayout(self.tab)
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.verticalLayout_2 = QVBoxLayout()
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setSizeConstraint(QLayout.SetMinAndMaxSize)
+        self.comboBox = QComboBox(self.tab)
+        self.comboBox.setObjectName(u"comboBox")
+        self.comboBox.setMinimumSize(QSize(30, 30))
+        self.comboBox.setMaximumSize(QSize(40, 40))
+
+        self.verticalLayout_2.addWidget(self.comboBox)
+
+        self.comboBox_2 = QComboBox(self.tab)
+        self.comboBox_2.setObjectName(u"comboBox_2")
+        self.comboBox_2.setMinimumSize(QSize(30, 30))
+        self.comboBox_2.setMaximumSize(QSize(40, 40))
+
+        self.verticalLayout_2.addWidget(self.comboBox_2)
+
+        self.comboBox_3 = QComboBox(self.tab)
+        self.comboBox_3.setObjectName(u"comboBox_3")
+        self.comboBox_3.setMinimumSize(QSize(30, 30))
+        self.comboBox_3.setMaximumSize(QSize(40, 40))
+
+        self.verticalLayout_2.addWidget(self.comboBox_3)
+
+        self.comboBox_4 = QComboBox(self.tab)
+        self.comboBox_4.setObjectName(u"comboBox_4")
+        self.comboBox_4.setMinimumSize(QSize(30, 30))
+        self.comboBox_4.setMaximumSize(QSize(40, 40))
+
+        self.verticalLayout_2.addWidget(self.comboBox_4)
+
+        self.comboBox_5 = QComboBox(self.tab)
+        self.comboBox_5.setObjectName(u"comboBox_5")
+        self.comboBox_5.setMinimumSize(QSize(30, 30))
+        self.comboBox_5.setMaximumSize(QSize(40, 40))
+
+        self.verticalLayout_2.addWidget(self.comboBox_5)
+
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer)
+
+
+        self.horizontalLayout_2.addLayout(self.verticalLayout_2)
+
+        self.gridLayout_2 = QGridLayout()
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
+        self.gridLayout_2.setSizeConstraint(QLayout.SetMaximumSize)
+
+        self.horizontalLayout_2.addLayout(self.gridLayout_2)
+
+        self.tabWidget.addTab(self.tab, "")
+        self.tab_2 = QWidget()
+        self.tab_2.setObjectName(u"tab_2")
+        self.verticalLayout = QVBoxLayout(self.tab_2)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.tabWidget.addTab(self.tab_2, "")
+
+        self.gridLayout.addWidget(self.tabWidget, 1, 0, 1, 1)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
