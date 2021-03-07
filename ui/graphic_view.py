@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(947, 799)
+        MainWindow.resize(1100, 799)
         MainWindow.setStyleSheet(u"background-color: rgb(14, 17, 25);")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
@@ -48,40 +48,26 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QVBoxLayout()
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setSizeConstraint(QLayout.SetMinAndMaxSize)
-        self.comboBox = QComboBox(self.tab)
-        self.comboBox.setObjectName(u"comboBox")
-        self.comboBox.setMinimumSize(QSize(30, 30))
-        self.comboBox.setMaximumSize(QSize(40, 40))
+        self.line_comboBox = QComboBox(self.tab)
+        self.line_comboBox.setObjectName(u"line_comboBox")
+        self.line_comboBox.setMinimumSize(QSize(30, 30))
+        self.line_comboBox.setMaximumSize(QSize(40, 40))
 
-        self.verticalLayout_2.addWidget(self.comboBox)
+        self.verticalLayout_2.addWidget(self.line_comboBox)
 
-        self.comboBox_2 = QComboBox(self.tab)
-        self.comboBox_2.setObjectName(u"comboBox_2")
-        self.comboBox_2.setMinimumSize(QSize(30, 30))
-        self.comboBox_2.setMaximumSize(QSize(40, 40))
+        self.indicators_comboBox = QComboBox(self.tab)
+        self.indicators_comboBox.setObjectName(u"indicators_comboBox")
+        self.indicators_comboBox.setMinimumSize(QSize(30, 30))
+        self.indicators_comboBox.setMaximumSize(QSize(40, 40))
 
-        self.verticalLayout_2.addWidget(self.comboBox_2)
+        self.verticalLayout_2.addWidget(self.indicators_comboBox)
 
-        self.comboBox_3 = QComboBox(self.tab)
-        self.comboBox_3.setObjectName(u"comboBox_3")
-        self.comboBox_3.setMinimumSize(QSize(30, 30))
-        self.comboBox_3.setMaximumSize(QSize(40, 40))
+        self._comboBox = QComboBox(self.tab)
+        self._comboBox.setObjectName(u"_comboBox")
+        self._comboBox.setMinimumSize(QSize(30, 30))
+        self._comboBox.setMaximumSize(QSize(40, 40))
 
-        self.verticalLayout_2.addWidget(self.comboBox_3)
-
-        self.comboBox_4 = QComboBox(self.tab)
-        self.comboBox_4.setObjectName(u"comboBox_4")
-        self.comboBox_4.setMinimumSize(QSize(30, 30))
-        self.comboBox_4.setMaximumSize(QSize(40, 40))
-
-        self.verticalLayout_2.addWidget(self.comboBox_4)
-
-        self.comboBox_5 = QComboBox(self.tab)
-        self.comboBox_5.setObjectName(u"comboBox_5")
-        self.comboBox_5.setMinimumSize(QSize(30, 30))
-        self.comboBox_5.setMaximumSize(QSize(40, 40))
-
-        self.verticalLayout_2.addWidget(self.comboBox_5)
+        self.verticalLayout_2.addWidget(self._comboBox)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -108,7 +94,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 947, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1100, 21))
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")

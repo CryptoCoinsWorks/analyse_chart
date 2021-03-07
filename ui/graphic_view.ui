@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>947</width>
+    <width>1100</width>
     <height>799</height>
    </rect>
   </property>
@@ -64,7 +64,7 @@
            <enum>QLayout::SetMinAndMaxSize</enum>
           </property>
           <item>
-           <widget class="QComboBox" name="comboBox">
+           <widget class="QComboBox" name="line_comboBox">
             <property name="minimumSize">
              <size>
               <width>30</width>
@@ -80,7 +80,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_2">
+           <widget class="QComboBox" name="indicators_comboBox">
             <property name="minimumSize">
              <size>
               <width>30</width>
@@ -96,39 +96,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="comboBox_3">
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>40</width>
-              <height>40</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox_4">
-            <property name="minimumSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>40</width>
-              <height>40</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox_5">
+           <widget class="QComboBox" name="_comboBox">
             <property name="minimumSize">
              <size>
               <width>30</width>
@@ -182,7 +150,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>947</width>
+     <width>1100</width>
      <height>21</height>
     </rect>
    </property>

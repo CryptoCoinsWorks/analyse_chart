@@ -24,7 +24,7 @@ class AnalyseData:
 
 
     def per_analyse(self):
-        per, index = utl.get_last_value(self.data['BVPS'])
+        per, index = utl.get_last_value(self.data['PER'])
         analyse = ""
         if per <= 0:
             analyse = "PER %s NégatifG" % per

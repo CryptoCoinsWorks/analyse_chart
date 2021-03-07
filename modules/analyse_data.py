@@ -1,5 +1,5 @@
 from pprint import pprint
-from . import utilites as utls
+from utils import utils as utls
 
 class AnalyseData:
     def __init__(self, data=None):

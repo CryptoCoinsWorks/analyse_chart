@@ -18,7 +18,8 @@ import datetime
 import numpy as np
 from pprint import pprint
 from utils import utils as utl
-from yahoo_fin import stock_info as sf
+from modules.yahoo_fin import stock_info as sf
+# from .analyse import AnalyseData
 from .analyse import AnalyseData
 
 class AnalyseFondamental:
@@ -52,7 +53,11 @@ class AnalyseFondamental:
         self.extend_dict_data()
 
     def set_var(self):
-        self.actions = int(np.ceil(float(self.statistic_datas['Value'][9].replace('M', ''))) * 1000000)
+        self.actions = None
+        if self.statistic_datas['Value'][9][-1] == "B":
+            self.actions = float(self.statistic_datas['Value'][9].replace('B', '')) * 1000000000
+        if self.statistic_datas['Value'][9][-1] == "M":
+            self.actions = float(self.statistic_datas['Value'][9].replace('M', '')) * 1000000
 
         self.price = self.per_datas['Quote Price']
         self.per = self.per_datas['PE Ratio (TTM)']
@@ -294,7 +299,9 @@ class AnalyseFondamental:
             self.datas[title].append(data)
 
 if __name__ == '__main__':
-    test = AnalyseFondamental("BN.PA")
-    pprint(test.datas)
-    # pprint(test.data_analyse)
+    test = AnalyseFondamental("AAPL")
+    pprint(test.data_analyse)
+    pprint(test.analyse.__dict__)
+    # testq = AnalyseFondamental("BN.PA")
+
 
